@@ -26,7 +26,7 @@ jobs:
           playwright install chromium --with-deps
 
       - name: Run tests with coverage
-        run: pytest --cov --cov-report=xml --ignore=tests/test_frontend_smoke.py
+        run: pytest --cov --cov-report=xml
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
