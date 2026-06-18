@@ -1,5 +1,7 @@
 import json
 import os
+import random
+import string
 import uuid
 
 import pytest
@@ -12,6 +14,9 @@ APP_URL = os.getenv("APP_URL", "http://127.0.0.1:8000")
 
 def _unique(name: str) -> str:
     return f"{name}_{uuid.uuid4().hex[:8]}"
+
+def _code() -> str:
+    return ''.join(random.choices(string.ascii_uppercase, k=3))
 
 
 def test_frontend_main_simulation_flow(page):
@@ -63,7 +68,7 @@ def test_api_duplicate_team_code_via_browser(page):
     tag = uuid.uuid4().hex[:6]
     name_a = f"Argentina_{tag}"
     name_b = f"Brasil_{tag}"
-    code_a = f"AR{tag[:2]}"
+    code_a = _code()
     request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name_a, "code": code_a}), headers={"Content-Type": "application/json"})
     res = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name_b, "code": code_a}), headers={"Content-Type": "application/json"})
     assert res.status == 409
@@ -75,8 +80,8 @@ def test_api_duplicate_team_name_via_browser(page):
     request = page.request
     tag = uuid.uuid4().hex[:6]
     name = f"Argentina_{tag}"
-    code_a = f"AR{tag[:2]}1"
-    code_b = f"AR{tag[:2]}2"
+    code_a = _code()
+    code_b = _code()
     request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name, "code": code_a}), headers={"Content-Type": "application/json"})
     res = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name, "code": code_b}), headers={"Content-Type": "application/json"})
     assert res.status == 409
@@ -88,7 +93,7 @@ def test_api_duplicate_player_in_team_via_browser(page):
     request = page.request
     tag = uuid.uuid4().hex[:6]
     team_name = f"Argentina_{tag}"
-    code = f"AR{tag[:3]}"
+    code = _code()
     team_res = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": team_name, "code": code}), headers={"Content-Type": "application/json"})
     team = team_res.json()
     player_name = f"Messi_{tag}"
@@ -104,8 +109,8 @@ def test_api_player_same_name_different_team_via_browser(page):
     tag = uuid.uuid4().hex[:6]
     t1_name = f"Argentina_{tag}"
     t2_name = f"Brasil_{tag}"
-    code_1 = f"AR{tag[:3]}"
-    code_2 = f"BR{tag[:3]}"
+    code_1 = _code()
+    code_2 = _code()
     t1 = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": t1_name, "code": code_1}), headers={"Content-Type": "application/json"}).json()
     t2 = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": t2_name, "code": code_2}), headers={"Content-Type": "application/json"}).json()
     player_name = f"Messi_{tag}"
