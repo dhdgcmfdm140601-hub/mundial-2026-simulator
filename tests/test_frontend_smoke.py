@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 
@@ -63,8 +64,8 @@ def test_api_duplicate_team_code_via_browser(page):
     name_a = f"Argentina_{tag}"
     name_b = f"Brasil_{tag}"
     code_a = f"AR{tag[:2]}"
-    request.post(f"{APP_URL}/teams/", data={"name": name_a, "code": code_a})
-    res = request.post(f"{APP_URL}/teams/", data={"name": name_b, "code": code_a})
+    request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name_a, "code": code_a}), headers={"Content-Type": "application/json"})
+    res = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name_b, "code": code_a}), headers={"Content-Type": "application/json"})
     assert res.status == 409
     body = res.json()
     assert "code" in body["detail"].lower()
@@ -76,8 +77,8 @@ def test_api_duplicate_team_name_via_browser(page):
     name = f"Argentina_{tag}"
     code_a = f"AR{tag[:2]}1"
     code_b = f"AR{tag[:2]}2"
-    request.post(f"{APP_URL}/teams/", data={"name": name, "code": code_a})
-    res = request.post(f"{APP_URL}/teams/", data={"name": name, "code": code_b})
+    request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name, "code": code_a}), headers={"Content-Type": "application/json"})
+    res = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": name, "code": code_b}), headers={"Content-Type": "application/json"})
     assert res.status == 409
     body = res.json()
     assert "name" in body["detail"].lower()
@@ -88,11 +89,11 @@ def test_api_duplicate_player_in_team_via_browser(page):
     tag = uuid.uuid4().hex[:6]
     team_name = f"Argentina_{tag}"
     code = f"AR{tag[:3]}"
-    team_res = request.post(f"{APP_URL}/teams/", data={"name": team_name, "code": code})
+    team_res = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": team_name, "code": code}), headers={"Content-Type": "application/json"})
     team = team_res.json()
     player_name = f"Messi_{tag}"
-    request.post(f"{APP_URL}/players/", data={"name": player_name, "position": "FW", "team_id": team["id"]})
-    res = request.post(f"{APP_URL}/players/", data={"name": player_name, "position": "FW", "team_id": team["id"]})
+    request.post(f"{APP_URL}/players/", data=json.dumps({"name": player_name, "position": "FW", "team_id": team["id"]}), headers={"Content-Type": "application/json"})
+    res = request.post(f"{APP_URL}/players/", data=json.dumps({"name": player_name, "position": "FW", "team_id": team["id"]}), headers={"Content-Type": "application/json"})
     assert res.status == 409
     body = res.json()
     assert "player" in body["detail"].lower()
@@ -105,10 +106,10 @@ def test_api_player_same_name_different_team_via_browser(page):
     t2_name = f"Brasil_{tag}"
     code_1 = f"AR{tag[:3]}"
     code_2 = f"BR{tag[:3]}"
-    t1 = request.post(f"{APP_URL}/teams/", data={"name": t1_name, "code": code_1}).json()
-    t2 = request.post(f"{APP_URL}/teams/", data={"name": t2_name, "code": code_2}).json()
+    t1 = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": t1_name, "code": code_1}), headers={"Content-Type": "application/json"}).json()
+    t2 = request.post(f"{APP_URL}/teams/", data=json.dumps({"name": t2_name, "code": code_2}), headers={"Content-Type": "application/json"}).json()
     player_name = f"Messi_{tag}"
-    res1 = request.post(f"{APP_URL}/players/", data={"name": player_name, "position": "FW", "team_id": t1["id"]})
+    res1 = request.post(f"{APP_URL}/players/", data=json.dumps({"name": player_name, "position": "FW", "team_id": t1["id"]}), headers={"Content-Type": "application/json"})
     assert res1.status == 201
-    res2 = request.post(f"{APP_URL}/players/", data={"name": player_name, "position": "FW", "team_id": t2["id"]})
+    res2 = request.post(f"{APP_URL}/players/", data=json.dumps({"name": player_name, "position": "FW", "team_id": t2["id"]}), headers={"Content-Type": "application/json"})
     assert res2.status == 201
